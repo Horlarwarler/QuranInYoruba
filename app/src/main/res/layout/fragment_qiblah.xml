@@ -1,0 +1,122 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.sadaqaworks.yorubaquran.qiblah.presentation.QiblahFragment"
+    android:background="@color/light_white"
+    >
+
+
+    <TextView
+        android:id="@+id/fragment_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Qiblah"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="@color/deep_green"
+        android:textAlignment="center"
+        android:layout_marginTop="30dp"
+        android:outlineProvider="none"
+        />
+
+    <ImageView
+        android:id="@+id/background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:src="@drawable/news"
+        />
+    <ImageView
+        android:id="@+id/arrow"
+        app:layout_constraintStart_toStartOf="@id/background"
+        app:layout_constraintEnd_toEndOf="@id/background"
+        app:layout_constraintTop_toTopOf="@id/background"
+        app:layout_constraintBottom_toBottomOf="@id/background"
+
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:src="@drawable/arrow_"
+        android:rotation="38"
+        />
+
+    <TextView
+        android:id="@+id/alignment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        tools:text="Aligned"
+        android:textColor="@color/deep_green"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/location"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/background"
+        android:layout_marginTop="10dp"
+        android:padding="5dp"
+        />
+    <LinearLayout
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/white_corner_background"
+        android:elevation="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:outlineProvider="none"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/location_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/alignment"
+        android:layout_marginBottom="0dp"
+        android:layout_marginTop="5dp"
+
+        >
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="start"
+            android:layout_marginEnd="5dp"
+            app:srcCompat="@drawable/location" />
+
+        <TextView
+            android:id="@+id/latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            tools:text="Oyo,Nigeria: 7.3751032,3.924122"
+            android:textColor="@color/deep_green"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/location_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="42 KOLOKUMO STREET, OYO, NIGERIA"
+        android:textSize="18sp"
+        android:textColor="@color/deep_green"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:layout_marginHorizontal="20dp"
+        android:visibility="invisible"
+
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

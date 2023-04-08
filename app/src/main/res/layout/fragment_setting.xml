@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/light_white"
+    tools:context="com.sadaqaworks.yorubaquran.settings.presentation.setting.SettingFragment"
+     android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_white"
+        tools:context="com.sadaqaworks.yorubaquran.settings.presentation.setting.SettingFragment">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="24dp"
+            />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="24dp"
+            />
+        <TextView
+            android:id="@+id/surah_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="@color/deep_green"
+            android:textAlignment="center"
+            android:layout_marginTop="30dp"
+            />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/continue_reading"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            android:checked="false"
+            android:text="Continue reading"
+            android:textColor="@color/deep_green"
+            android:background="@drawable/setting_background"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/surah_name"
+            />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/automatically_download"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            android:checked="false"
+            android:background="@drawable/setting_background"
+            android:text="Download Surah Before Playing"
+            android:textColor="@color/deep_green"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/continue_reading"
+            />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/auto_scroll"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            android:checked="false"
+            android:background="@drawable/setting_background"
+            android:text="Scroll Surah During Playing"
+            android:textColor="@color/deep_green"
+            android:soundEffectsEnabled="true"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/automatically_download"
+            />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/play_auto"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/setting_background"
+            android:checked="true"
+            android:text="Play After Downloading"
+            android:textColor="@color/deep_green"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/auto_scroll" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/select_font"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/play_auto"
+            android:hint="Select Font"
+            app:boxStrokeWidth="1dp"
+            app:boxBackgroundColor="@color/white"
+            android:textColorHint="@color/deep_green"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+            app:boxStrokeWidthFocused="1dp"
+            android:textAlignment="textStart"
+
+            >
+            <AutoCompleteTextView
+                android:id="@+id/font"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="none"
+                android:textIsSelectable="false"
+                android:textColor="@color/deep_green"
+                android:textSize="15sp"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/reciter_input"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/select_font"
+            android:hint="Select Quran Reciter"
+            app:boxStrokeWidth="1dp"
+            app:boxBackgroundColor="@color/white"
+            android:textColorHint="@color/deep_green"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+            app:boxStrokeWidthFocused="1dp"
+            android:textAlignment="textStart"
+            >
+            <AutoCompleteTextView
+                android:id="@+id/reciter_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="none"
+                android:textIsSelectable="false"
+                android:textColor="@color/deep_green"
+                android:textSize="15sp"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView
+            android:id="@+id/about_page"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@id/reciter_input"
+            android:background="@drawable/setting_background"
+            android:gravity="center_vertical"
+            android:textColor="@color/deep_green"
+            android:text="About The Translation Work"
+            android:layout_marginTop="10dp"
+            />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/quran_navigation"
+    app:startDestination="@id/splashFragment">
+
+    <fragment
+        android:id="@+id/surahFragment"
+        android:name="com.sadaqaworks.yorubaquran.quran.presentation.surah.SurahFragment"
+        android:label="fragment_quran"
+        tools:layout="@layout/fragment_surah" >
+        <action
+            android:id="@+id/action_quranFragment_to_surahFragment"
+            app:destination="@id/ayahFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/surahFragment"
+            />
+        <action
+            android:id="@+id/action_surahFragment_to_qiblahFragment"
+            app:destination="@id/qiblahFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/surahFragment"
+            />
+        <action
+            android:id="@+id/action_surahFragment_to_duaCategoryFragment"
+            app:destination="@id/duaCategoryFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/surahFragment"
+            />
+        <action
+            android:id="@+id/action_surahFragment_to_settingFragment"
+            app:destination="@id/settingFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/surahFragment"
+            />
+        <action
+            android:id="@+id/action_surahFragment_to_bookmarkFragment"
+            app:destination="@id/bookmarkFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/surahFragment"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/bookmarkFragment"
+        android:name="com.sadaqaworks.yorubaquran.quran.presentation.bookmark.BookmarkFragment"
+        android:label="BookmarkFragment"
+        tools:layout="@layout/fragment_bookmark"
+        >
+<!--        <action-->
+<!--            android:id="@+id/action_bookmarkFragment_to_quranFragment"-->
+<!--            app:destination="@id/surahFragment" />-->
+<!--        <action-->
+<!--            android:id="@+id/action_bookmarkFragment_to_ayahFragment"-->
+<!--            app:destination="@id/ayahFragment" />-->
+    </fragment>
+    <fragment
+        android:id="@+id/ayahFragment"
+        android:name="com.sadaqaworks.yorubaquran.quran.presentation.ayah.AyahFragment"
+        android:label="SurahFragment"
+        tools:layout="@layout/fragment_ayah"
+        >
+        <argument
+            android:name="surahId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_ayahFragment_to_bookmarkFragment"
+            app:destination="@id/bookmarkFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            app:popUpTo="@id/ayahFragment"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.sadaqaworks.yorubaquran.quran.presentation.splash.SplashFragment"
+        android:label="fragment_splash"
+        tools:layout="@layout/fragment_splash" >
+        <action
+            android:id="@+id/action_splashFragment_to_surahFragment"
+            app:destination="@id/surahFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/qiblahFragment"
+        android:name="com.sadaqaworks.yorubaquran.qiblah.presentation.QiblahFragment"
+        android:label="fragment_qiblah"
+        tools:layout="@layout/fragment_qiblah" >
+        <action
+            android:id="@+id/action_qiblahFragment_to_surahFragment"
+            app:destination="@id/surahFragment"
+            app:popUpTo="@id/surahFragment"
+            app:enterAnim="@anim/from_left"
+            app:exitAnim="@anim/from_right"
+            />
+        <action
+            android:id="@+id/action_qiblahFragment_to_duaCategoryFragment"
+            app:destination="@id/duaCategoryFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/duaCategoryFragment"
+        android:name="com.sadaqaworks.yorubaquran.dua.presentation.category.DuaCategoryFragment"
+        android:label="fragment_dua_category"
+        tools:layout="@layout/fragment_dua_category" >
+        <action
+            android:id="@+id/action_duaCategoryFragment_to_chapterFragment"
+            app:destination="@id/chapterFragment"
+            app:popUpTo="@id/duaCategoryFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            />
+        <action
+            android:id="@+id/action_duaCategoryFragment_to_settingFragment"
+            app:destination="@id/settingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chapterFragment"
+        android:name="com.sadaqaworks.yorubaquran.dua.presentation.chapter.ChapterFragment"
+        android:label="fragment_chapter"
+        tools:layout="@layout/fragment_dua_chapter" >
+        <action
+            android:id="@+id/action_chapterFragment_to_detailsDuaFragment"
+            app:destination="@id/detailsDuaFragment"
+            app:popUpTo="@id/chapterFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            />
+        <argument
+            android:name="categoryId"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailsDuaFragment"
+        android:name="com.sadaqaworks.yorubaquran.dua.presentation.details.DetailsDuaFragment"
+        android:label="fragment_details_dua"
+        tools:layout="@layout/fragment_details_dua" >
+       <argument
+            android:name="chapterId"
+            app:argType="integer"/>
+        <argument
+            android:name="chapterName"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.sadaqaworks.yorubaquran.settings.presentation.setting.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" >
+        <action
+            android:id="@+id/action_settingFragment_to_aboutFragment"
+            app:destination="@id/aboutFragment"
+            app:popUpTo="@id/settingFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.sadaqaworks.yorubaquran.settings.presentation.about.AboutFragment"
+        android:label="fragment_about"
+        tools:layout="@layout/fragment_about" />
+
+</navigation>

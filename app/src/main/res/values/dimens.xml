@@ -1,0 +1,10 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="small_radius">10dp</dimen>
+    <dimen name="medium_radius">15dp</dimen>
+    <dimen name="large_radius">20dp</dimen>
+    <dimen name="small_font">15sp</dimen>
+    <dimen name="medium_font">20sp</dimen>
+    <dimen name="larger_font">25sp</dimen>
+    <dimen name="dua_image_size">40dp</dimen>
+</resources>

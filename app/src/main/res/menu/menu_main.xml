@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.sadaqaworks.yorubaquran.MainActivity">
+    <item
+        android:id="@+id/quran"
+        android:title="@string/quran_navigation"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/quran_selector"
+        android:checked="true"
+        />
+    <item
+        android:id="@+id/dua"
+        android:title="@string/dua_navigation"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/hand_stroke"
+        android:checked="true"
+        />
+    <item
+        android:id="@+id/qiblah"
+        android:title="@string/qiblah_navigation"
+        android:icon="@drawable/qiblah_selector"
+        app:showAsAction="ifRoom"
+        android:checked="true"
+        />
+    <item
+        android:id="@+id/settings"
+        android:title="@string/settings_navigation"
+        android:icon="@drawable/settings_selector"
+        app:showAsAction="ifRoom"
+        android:checked="true"
+
+
+        />
+
+</menu>

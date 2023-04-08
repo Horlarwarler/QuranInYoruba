@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/surah_box"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:elevation="5dp"
+    android:background="@drawable/white_corner_background"
+    android:paddingStart="13dp"
+    android:paddingEnd="10dp"
+    android:paddingVertical="15dp"
+    android:layout_marginVertical="2dp"
+    android:outlineProvider="none"
+    >
+
+    <TextView
+        android:id="@+id/dua_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:background="@drawable/deep_green_background"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:textAlignment="center"
+        android:padding="15dp"
+        />
+
+    <TextView
+        android:id="@+id/dua_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chapter Name"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@id/dua_number"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="50dp"
+        android:textAlignment = "textStart"
+        android:paddingEnd="15dp"
+        android:lineSpacingExtra="5sp"
+
+
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

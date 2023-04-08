@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:maxHeight="300dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/dua_top_background"
+    android:padding="10dp"
+    >
+    <TextView
+        android:id="@+id/islamic_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="09 Muharam,1443 A.H"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        />
+
+    <LinearLayout
+        android:id="@+id/linear_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/islamic_date"
+        app:layout_constraintBottom_toBottomOf="@id/islamic_date"
+        android:orientation="horizontal"
+        android:background="@drawable/deep_green_background"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="5dp"
+        >
+        <ImageView
+            android:id="@+id/location_image"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:src="@drawable/location"
+            app:tint="@color/white"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="TODO" />
+        <TextView
+            android:id="@+id/location_country"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nigeria"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/prayer_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ISHA"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/islamic_date"
+
+        />
+
+    <TextView
+        android:id="@+id/current_prayer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current Prayer"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/prayer_name"
+        android:layout_marginTop="5dp"
+        />
+
+    <LinearLayout
+        android:id="@+id/estimated_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/current_prayer"
+        app:layout_constraintEnd_toStartOf="@id/current_prayer"
+        android:orientation="vertical"
+        android:background="@drawable/deep_green_background"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="10dp"
+        android:gravity="center"
+        android:elevation="3dp"
+        android:outlineProvider="none"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estimated Start"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:layout_marginBottom="3dp"
+            />
+        <TextView
+            android:id="@+id/start_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="07:05PM"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:letterSpacing="0.1"
+
+
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/estimated_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/current_prayer"
+        app:layout_constraintStart_toEndOf="@id/current_prayer"
+        android:orientation="vertical"
+        android:background="@drawable/deep_green_background"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="10dp"
+        android:gravity="center"
+        android:elevation="3dp"
+
+        android:outlineProvider="none"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estimated End"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:layout_marginBottom="3dp"
+            />
+        <TextView
+            android:id="@+id/end_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="08:05PM"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:letterSpacing="0.1"
+
+
+            />
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/mosque_original"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linear_location"
+        android:paddingTop="5dp"
+        android:scaleType="fitXY"
+        />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

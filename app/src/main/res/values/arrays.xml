@@ -1,0 +1,46 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+    <string-array name="reciter">
+        <item>Abdullah Basfar</item>
+        <item>Abdurrahmaan As-Sudais</item>
+        <item>Abdul Samad</item>
+        <item>Abu Bakr Ash-Shaatree</item>
+        <item>Ahmed ibn Ali al-Ajamy"</item>
+        <item>Hani Rifai</item>
+        <item>Husary</item>
+        <item>Husary (Mujawwad)</item>
+        <item>Hudhaify</item>
+        <item>Ibrahim Akhdar</item>
+        <item>Maher Al Muaiqly</item>
+        <item>Muhammad Ayyoub</item>
+        <item>Muhammad Jibreel</item>
+        <item>Saood bin Ibraaheem Ash-Shuraym</item>
+        <item>Parhizgar</item>
+        <item>Ayman Sowaid</item>
+
+
+    </string-array>
+
+    <string-array name="font">
+        <item>24</item>
+        <item>26</item>
+        <item>28</item>
+        <item>30</item>
+        <item>32</item>
+        <item>34</item>
+        <item>36</item>
+        <item>38</item>
+        <item>40</item>
+        <item>42</item>
+        <item>44</item>
+    </string-array>
+</resources>
