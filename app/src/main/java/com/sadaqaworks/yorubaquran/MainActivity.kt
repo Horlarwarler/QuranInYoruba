@@ -1,5 +1,6 @@
 package com.sadaqaworks.yorubaquran
 
+import android.content.pm.ActivityInfo
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +16,7 @@ import com.sadaqaworks.yorubaquran.shared.SharedViewModel
 import com.google.android.material.navigation.NavigationBarView
 import com.sadaqaworks.yorubaquran.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController:NavController
+
     var selectedFragment : Int? = null
 
     private val sharedViewModel: SharedViewModel by viewModels()
@@ -61,6 +64,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.qiblah -> {
                     selectedFragment = R.id.qiblahFragment
 
+
                 }
                 R.id.quran -> {
                     selectedFragment = R.id.surahFragment
@@ -74,11 +78,21 @@ class MainActivity : AppCompatActivity() {
                     selectedFragment  = R.id.duaCategoryFragment
 
                 }
+                R.id.splashFragment ->{
+                    selectedFragment = R.id.splashFragment
+                }
                 else -> {
                 }
 
             }
             val previousSelectedFragment = navController.currentDestination?.id
+            if (selectedFragment == R.id.qiblahFragment  ){
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+
+            else  if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR){
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+            }
             if (selectedFragment == previousSelectedFragment){
                return@OnItemSelectedListener false
             }

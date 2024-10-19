@@ -121,6 +121,7 @@
         app:layout_constraintBottom_toBottomOf="@id/surah_name"
         android:padding="10dp"
         />
+ 
     <include
         android:id="@+id/surah_details"
         layout="@layout/surah_details_card"

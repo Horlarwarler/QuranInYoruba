@@ -3,6 +3,7 @@ package com.sadaqaworks.yorubaquran.qiblah.presentation
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.GeomagneticField
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -14,70 +15,83 @@ import android.util.Log
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 
 class QiblahFinder(
-    val  context: Context,
-    val longitude:Double,
-    val latitude:Double,
-    val altitude:Double,
-    val kabbahImage:ImageView,
-    val arrowImage:ImageView
-    ) : Service(), SensorEventListener {
-    private var currentDegree:Float = 0F
-    private var currentDegreeNeedle:Float = 0F
+    val context: Context,
+    private val longitude: Double,
+    private val latitude: Double,
+    private val altitude: Double,
+    private val kabbahImage: ImageView,
+    val arrowImage: ImageView
+) : Service(), SensorEventListener {
+    private var currentDegree: Float = 0F
+    private var currentDegreeNeedle: Float = 0F
     private val userLocation = Location("service Provider")
 
 
-    private val _isAlign :MutableLiveData<Boolean> = MutableLiveData()
-    val isAlign :MutableLiveData<Boolean>
-    get()  = _isAlign
+    private val _isAlign: MutableLiveData<Boolean> = MutableLiveData()
+    val isAlign: MutableLiveData<Boolean>
+        get() = _isAlign
 
 
+    private var sensor: Sensor?
+    private var sensorManager: SensorManager
 
-    private var sensor: Sensor
-    private var sensorManager:SensorManager
-   init {
+    init {
 
-       userLocation.altitude = altitude
-       userLocation.longitude = longitude
-       userLocation.latitude = latitude
-       sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
-       sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION)
-       startMonitoring()
+        val hasCompassSensor: Boolean =
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS)
+        sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION)
+        if (sensor == null) {
+            Toast.makeText(context, "Device Not Supported", Toast.LENGTH_LONG).show()
+        } else {
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME)
+        }
+    }
 
-   }
     override fun onCreate() {
+
         startMonitoring()
         super.onCreate()
 
     }
 
     override fun onDestroy() {
-      destroy()
+        destroy()
         super.onDestroy()
     }
 
-    fun destroy(){
-        sensorManager.unregisterListener(this,)
+    fun destroy() {
+        sensorManager?.unregisterListener(this)
     }
 
-    fun startMonitoring(){
-        sensorManager.registerListener(this, sensor,SensorManager.SENSOR_DELAY_GAME)
+    private fun startMonitoring() {
+
+
+        if (sensor == null ) {
+            return
+        }
+        userLocation.altitude = altitude
+        userLocation.longitude = longitude
+        userLocation.latitude = latitude
 
     }
 
 
     override fun onBind(p0: Intent?): IBinder? {
-       return null
+        return null
     }
 
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         var head = sensorEvent?.values?.get(0)!!
         val degree = sensorEvent.values?.get(0)!!
+
         val destinationLocation = Location("service Provider")
         val qiblahCordinate = QiblahCordinate()
-        destinationLocation.latitude =qiblahCordinate.latitude
+        destinationLocation.latitude = qiblahCordinate.latitude
         destinationLocation.longitude = qiblahCordinate.longitude
         var bearTo = userLocation.bearingTo(destinationLocation)
 
@@ -85,11 +99,12 @@ class QiblahFinder(
             userLocation.latitude.toFloat(),
             userLocation.longitude.toFloat(),
             userLocation.altitude.toFloat(),
-            System.currentTimeMillis())
+            System.currentTimeMillis()
+        )
         head -= geomagneticField.declination
 
 
-        if (bearTo < 0){
+        if (bearTo < 0) {
             bearTo += 360
         }
 
@@ -98,11 +113,18 @@ class QiblahFinder(
 
         var direction = bearTo - head
 
-        if (direction < 0){
+        if (direction < 0) {
             direction += 360
         }
 
-        val kabbahAnimation = RotateAnimation(currentDegree,-degree,Animation.RELATIVE_TO_SELF,0.5F,Animation.RELATIVE_TO_SELF,0.5F)
+        val kabbahAnimation = RotateAnimation(
+            currentDegree,
+            -degree,
+            Animation.RELATIVE_TO_SELF,
+            0.5F,
+            Animation.RELATIVE_TO_SELF,
+            0.5F
+        )
         kabbahAnimation.duration = 210
         kabbahAnimation.fillAfter = true
         kabbahImage.startAnimation(kabbahAnimation)
@@ -116,7 +138,7 @@ class QiblahFinder(
 }
 
 
-    //D/Bear: direction is 358.36914
+//D/Bear: direction is 358.36914
 //        D/Bear: bear to 64.193 , head is 65.822395
 //
 //

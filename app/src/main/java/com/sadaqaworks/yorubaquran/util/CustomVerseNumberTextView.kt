@@ -1,14 +1,8 @@
 package com.sadaqaworks.yorubaquran.util
 
 import android.content.Context
-import android.graphics.Paint
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
-import android.view.Gravity
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.compose.ui.graphics.Canvas
 import javax.inject.Inject
 
 class CustomVerseNumberTextView @Inject constructor(

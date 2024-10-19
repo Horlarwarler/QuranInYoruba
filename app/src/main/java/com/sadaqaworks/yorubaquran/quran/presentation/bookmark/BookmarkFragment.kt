@@ -30,8 +30,10 @@ class BookmarkFragment : Fragment() {
         val bookmarkRecycler = fragmentBookmarkBinding.surahListRecycler
 
         val bookmarkAdapter = BookmarkAdapter {
-            ayahId ->
-            viewModel.deleteFromBookmark(ayahId)
+           bookmark ->
+            viewModel.deleteFromBookmark(
+                bookmark.id
+            )
         }
         viewModel.bookmarkState.observe(viewLifecycleOwner){
             bookmarkState ->

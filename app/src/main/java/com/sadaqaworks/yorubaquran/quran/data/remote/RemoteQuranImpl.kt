@@ -29,16 +29,17 @@ class RemoteQuranImpl @Inject constructor(
     }
 
     override suspend fun getRemoteAllAyah(): Resource<List<Verse>> {
-        val url = RemoteQuran.ayahUrl
-        val response = makeNetworkRequest<SurahDto>(url, client)
-        val data = response.first
-        val errorMessage = response.second
-        if (data == null ){
-           return Resource.Error(errorMessage = errorMessage?:"Unknown Error")
-
-        }
-        val verses =data.convertToModel().verses
-        return Resource.Success(verses)
+        TODO()
+//        val url = RemoteQuran.ayahUrl
+//        val response = makeNetworkRequest<SurahDto>(url, client)
+//        val data = response.first
+//        val errorMessage = response.second
+//        if (data == null ){
+//           return Resource.Error(errorMessage = errorMessage?:"Unknown Error")
+//
+//        }
+//        val verses =data.convertToModel().verses
+//        return Resource.Success(verses)
 
     }
 

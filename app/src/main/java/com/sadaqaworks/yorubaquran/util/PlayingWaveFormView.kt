@@ -15,10 +15,10 @@ class PlayingWaveFormView(context: Context, attributeSet: AttributeSet): View(co
     init {
         paint.color = Color.rgb(244,81,30)
     }
-    override fun draw(canvas: Canvas?) {
+    override fun draw(canvas: Canvas) {
         super.draw(canvas)
        // canvas?.drawRoundRect(RectF(20f,30f,50f,60f),10f,10f,paint)
-        canvas?.drawRoundRect(RectF(0f,0f,50f,60f),10f,10f,paint)
+        canvas.drawRoundRect(RectF(0f,0f,50f,60f),10f,10f,paint)
     }
 
 }

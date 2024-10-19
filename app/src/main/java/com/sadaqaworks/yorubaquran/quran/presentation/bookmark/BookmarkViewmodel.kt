@@ -14,57 +14,65 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookmarkViewmodel @Inject constructor(
-    private val  quranRepositoryInterface: quranRepositoryInterface
+    private val quranRepositoryInterface: quranRepositoryInterface
 ) : ViewModel() {
-    private  val _bookmarkState  = MutableLiveData<BookmarkUiState>().apply {
+    private val _bookmarkState = MutableLiveData<BookmarkUiState>().apply {
         value = BookmarkUiState()
     }
     val stringListHelper = ListHelper<String>()
 
-    val bookmarkState : LiveData<BookmarkUiState>
+    val bookmarkState: LiveData<BookmarkUiState>
         get() = _bookmarkState
+
     init {
-          getAllBookmark()
+        getAllBookmark()
     }
 
 
-    private fun getAllBookmark(){
+    private fun getAllBookmark() {
 
         viewModelScope.launch {
-            quranRepositoryInterface.getAllBookmark().collect{
-                resource ->
-                when(resource){
-                    is Resource.Loading ->{
+            quranRepositoryInterface.getAllBookmark().collect { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
 
                     }
+
                     is Resource.Success -> {
-                            _bookmarkState.value = bookmarkState.value?.copy(bookmarks = resource.data!!)
+                        _bookmarkState.value =
+                            bookmarkState.value?.copy(bookmarks = resource.data!!)
                     }
-                    is Resource.Error ->{
+
+                    is Resource.Error -> {
                         val messages = bookmarkState.value?.messages!!
 
-                        val newMessages = stringListHelper.addElement("${resource.errorMessage} occurs", messages)
+                        val newMessages =
+                            stringListHelper.addElement("${resource.errorMessage} occurs", messages)
 
-                        _bookmarkState.value  = bookmarkState.value?.copy(messages = newMessages)
+                        _bookmarkState.value = bookmarkState.value?.copy(messages = newMessages)
                     }
                 }
             }
         }
     }
 
-    fun deleteFromBookmark(ayahId:Int){
+    fun deleteFromBookmark(
+        id: Int
+    ) {
         viewModelScope.launch {
-            quranRepositoryInterface.deleteBookmark(ayahId)
-           getAllBookmark()
+            quranRepositoryInterface.deleteBookmark(
+                id = id
+            )
+            getAllBookmark()
         }
         val messages = bookmarkState.value?.messages!!
 
         val newMessages = stringListHelper.addElement("Successfully Deleted ", messages)
 
-        _bookmarkState.value  = bookmarkState.value?.copy(messages = newMessages)
+        _bookmarkState.value = bookmarkState.value?.copy(messages = newMessages)
     }
 
-    fun deleteAllBookmark(){
+    fun deleteAllBookmark() {
         viewModelScope.launch {
             quranRepositoryInterface.deleteAllBookmark()
             getAllBookmark()
@@ -73,11 +81,12 @@ class BookmarkViewmodel @Inject constructor(
 
         val newMessages = stringListHelper.addElement("Successfully Delete All ", messages)
 
-        _bookmarkState.value  = bookmarkState.value?.copy(messages = newMessages)
+        _bookmarkState.value = bookmarkState.value?.copy(messages = newMessages)
     }
-    fun deleteShowedMessage(){
+
+    fun deleteShowedMessage() {
         val messages = bookmarkState.value?.messages!!
-        val newMessages = stringListHelper.removeElement( messages)
-        _bookmarkState.value  = bookmarkState.value?.copy(messages = newMessages)
+        val newMessages = stringListHelper.removeElement(messages)
+        _bookmarkState.value = bookmarkState.value?.copy(messages = newMessages)
     }
 }

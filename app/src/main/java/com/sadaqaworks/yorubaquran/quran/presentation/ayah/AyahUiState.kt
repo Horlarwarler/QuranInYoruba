@@ -22,7 +22,7 @@ data class AyahUiState(
     val messages: List<String> = emptyList(),
     val searchText:String = "",
     val normalizedSearchText:String = "",
-    val lastReadVerse: Int,
+    //val lastReadVerse: Int,
     val notifyUserAboutReciterSelection: Boolean,
     val notifyUserToDownloadRemaining:Boolean = false,
     val playFromInternet:Boolean,
@@ -32,8 +32,8 @@ data class AyahUiState(
     val autoPlay:Boolean,
     val autoScroll:Boolean,
     val searchIndex: List<Int> = emptyList(),
-    val searchScrollIndex:Int?= null
-
-
+    val searchScrollIndex:Int?= null,
+    val firstVisibleItemId:Int = 0,
+    val visibleItemOffset: Int = 0,
 )
 

@@ -1,9 +1,9 @@
 package com.sadaqaworks.yorubaquran.settings.presentation.setting
 
-import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.sadaqaworks.yorubaquran.shared.QuranPreference
 import com.sadaqaworks.yorubaquran.util.ListHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -11,26 +11,24 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val sharedPreference: SharedPreferences
+    private val quranPreference: QuranPreference
 ): ViewModel() {
-   private val continueReading = sharedPreference.getBoolean("continueReading", false)
-    private val showNotification = sharedPreference.getBoolean("showNotification", false)
-    private val downloadBeforePlaying = sharedPreference.getBoolean("downloadBeforePlaying",false)
-    private val scrollAuto = sharedPreference.getBoolean("autoScroll",true)
-    private val playAuto = sharedPreference.getBoolean("autoPlay",true)
-    private val fontSize = sharedPreference.getInt("fontSize", 20)
-    private val reciter = sharedPreference.getString("reciter","Abdurrahmaan As-Sudais")!!
+   private val continueReading = quranPreference.continueReading()
+    private val downloadBeforePlaying = quranPreference.downloadBeforePlaying()
+    private val scrollAuto = quranPreference.autoScroll()
+    private val autoPlay = quranPreference.autoPlay()
+    private val fontSize = quranPreference.getFontSize()
+    private val reciter =quranPreference.getReciterName()
     val stringListHelper = ListHelper<String>()
 
     private val _settingUiState  =  MutableLiveData<SettingScreenState> ().apply {
         value = SettingScreenState(
             continueReading = continueReading,
             downloadBeforePlaying = downloadBeforePlaying,
-            showNotification = showNotification,
             fontSize = fontSize,
             reciter = reciter,
             scrollAuto = scrollAuto,
-            playAuto = playAuto
+            playAuto = autoPlay
         )
     }
     val settingUiState:LiveData<SettingScreenState>
@@ -62,7 +60,7 @@ class SettingViewModel @Inject constructor(
             }
 
             is SettingUIEvent.PlayAuto -> {
-                playAuto()
+                autoPlay()
             }
         }
     }
@@ -71,50 +69,36 @@ class SettingViewModel @Inject constructor(
     private fun continueReading(){
         val continueReading = _settingUiState.value?.continueReading!!
         val newValue = !continueReading
-        sharedPreference.edit().putBoolean("continueReading", newValue).apply()
-        //_settingUiState.value = settingUiState.value?.copy(continueReading = newValue)
+        quranPreference.saveContinueReading(newValue)
     }
     private fun scrollAuto(){
         val scrollAuto = _settingUiState.value?.scrollAuto!!
         val newValue = !scrollAuto
-        sharedPreference.edit().putBoolean("autoScroll", newValue).apply()
+        quranPreference.saveAutoScroll(newValue)
     }
-    private fun playAuto(){
+    private fun autoPlay(){
         val playAuto = _settingUiState.value?.playAuto!!
         val newValue = !playAuto
-        sharedPreference.edit().putBoolean("autoPlay", newValue).apply()
+        quranPreference.saveAutoPlay(newValue)
     }
 
-    private fun showNotification(){
-        val showNotification = _settingUiState.value?.showNotification!!
-        val newValue = !showNotification
-        sharedPreference.edit().putBoolean("showNotification", newValue).apply()
-
-        //_settingUiState.value = settingUiState.value?.copy(showNotification = newValue)
-    }
 
     private fun downloadBeforePlaying(){
         val downloadBeforePlaying = _settingUiState.value?.downloadBeforePlaying!!
         val newValue = !downloadBeforePlaying
-        sharedPreference.edit().putBoolean("downloadBeforePlaying", newValue).apply()
+        quranPreference.saveDownloadBeforePlaying(newValue)
 
        // _settingUiState.value = settingUiState.value?.copy(downloadBeforePlaying = newValue)
     }
 
     private fun changeFontSize(fontSize:Int){
-        sharedPreference.edit().putInt("fontSize", fontSize).apply()
+        quranPreference.saveFontSize(fontSize)
      //   _settingUiState.value = settingUiState.value?.copy(fontSize = fontSize)
     }
 
     private fun changeReciter(reciter:String){
-        sharedPreference.edit().putString("reciter",reciter).apply()
+        quranPreference.saveReciterName(reciter)
        // _settingUiState.value = settingUiState.value?.copy(reciter = reciter)
-    }
-
-    fun deleteShowedMessage(){
-        val messages = settingUiState.value?.messages!!
-        val newMessages = stringListHelper.removeElement( messages)
-        _settingUiState.value  = settingUiState.value?.copy(messages = newMessages)
     }
 
 

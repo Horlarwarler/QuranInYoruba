@@ -17,15 +17,6 @@ fun SurahDetailsDto.convertToModel(): SurahDetails{
     )
 }
 
-fun SurahDto.convertToModel(): Surah{
-
-    return Surah(
-        verses = verses.map {
-            it.convertToModel()
-        }
-    )
-}
-
 fun VerseDto.convertToModel(): Verse{
 
     return  Verse(

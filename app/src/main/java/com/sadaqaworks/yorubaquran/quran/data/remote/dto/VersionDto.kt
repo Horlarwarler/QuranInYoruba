@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class VersionDto(
-    val version : Double
+    val version : Double = 1.0
 )

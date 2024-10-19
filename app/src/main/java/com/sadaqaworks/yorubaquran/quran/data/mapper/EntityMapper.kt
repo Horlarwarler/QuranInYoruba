@@ -59,26 +59,3 @@ fun SurahDetails.convertToEntity(): SurahEntity {
     )
 }
 
-fun BookmarkEntity.convertToModel(): Bookmark {
-    return  Bookmark(
-        id  = id,
-        verseId = verseId,
-        surahId = surahId,
-        arabic = arabic,
-        translation = translation,
-        footnote = footnote
-
-    )
-}
-
-fun Bookmark.convertToEntity(): BookmarkEntity{
-    return  BookmarkEntity(
-        id  = id,
-        verseId = verseId,
-        surahId = surahId,
-        arabic = arabic,
-        translation = translation,
-        footnote = footnote
-
-    )
-}

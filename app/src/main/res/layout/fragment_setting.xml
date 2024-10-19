@@ -105,6 +105,20 @@
             app:layout_constraintStart_toStartOf="@+id/guideline1"
             app:layout_constraintTop_toBottomOf="@+id/auto_scroll" />
 
+        <TextView
+            android:id="@+id/otherApp"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@id/play_auto"
+            android:background="@drawable/setting_background"
+            android:gravity="center_vertical"
+            android:textColor="@color/deep_green"
+            android:text="Other App By Developer"
+            android:layout_marginTop="10dp"
+            />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/select_font"
             android:layout_width="0dp"
@@ -112,7 +126,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="@+id/guideline1"
             app:layout_constraintEnd_toStartOf="@id/guideline2"
-            app:layout_constraintTop_toBottomOf="@+id/play_auto"
+            app:layout_constraintTop_toBottomOf="@+id/otherApp"
             android:hint="Select Font"
             app:boxStrokeWidth="1dp"
             app:boxBackgroundColor="@color/white"

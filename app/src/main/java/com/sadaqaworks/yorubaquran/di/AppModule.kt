@@ -2,12 +2,18 @@ package com.sadaqaworks.yorubaquran.di
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+
 import com.sadaqaworks.yorubaquran.download.DownloaderInterface
 import com.sadaqaworks.yorubaquran.download.KtorDownloaderImpl
 import com.sadaqaworks.yorubaquran.internet.InternetConnectionMonitor
 import com.sadaqaworks.yorubaquran.shared.QuranDatabase
+import com.sadaqaworks.yorubaquran.shared.QuranPreference
+import com.sadaqaworks.yorubaquran.shared.QuranPreferenceImp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,14 +34,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesClient():HttpClient{
-        return HttpClient(CIO){
-            install(HttpTimeout){
+    fun providesClient(): HttpClient {
+        return HttpClient(CIO) {
+            install(HttpTimeout) {
                 connectTimeoutMillis = 100000
             }
-            install(ContentNegotiation){
+            install(ContentNegotiation) {
                 json(
-                    Json{
+                    Json {
                         prettyPrint = true
                         isLenient = true
                         ignoreUnknownKeys = true
@@ -51,40 +57,44 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesDatabase(
+    fun providesSharedPreference(
         @ApplicationContext context: Context
-    ): QuranDatabase {
-        return Room.databaseBuilder(
-            context,
-            QuranDatabase::class.java,
-            "quran.db"
-        ).createFromAsset("quran.db")
-            .build()
+    ): QuranPreference {
+        val preference = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        return QuranPreferenceImp(preference)
     }
 
     @Provides
     @Singleton
-    fun providesSharedPrefrence(
-        @ApplicationContext context: Context
-    ):SharedPreferences{
-        return context.getSharedPreferences("prefs",Context.MODE_PRIVATE)
+    fun provideContext(application: Application): Context {
+        return application.applicationContext
     }
 
-//    @Provides
-//    @Singleton
-//    fun providesDownload(
-//        @ApplicationContext context: Context
-//    ):DownloaderInterface{
-//        return  DownloaderManagerImpl(context)
-//    }
+
+    @Provides
+    @Singleton
+    fun providesDatabase(
+        @ApplicationContext context: Context
+    ): QuranDatabase {
+
+        return Room.databaseBuilder(
+            context,
+            QuranDatabase::class.java,
+            "updated_quran"
+        )
+            .fallbackToDestructiveMigrationOnDowngrade()
+            .createFromAsset("updated_quran.db")
+            .build()
+    }
+
 
     @Provides
     @Singleton
     fun providesKtorDownload(
         httpClient: HttpClient,
-       @ApplicationContext context: Context
-    ):DownloaderInterface{
-        return  KtorDownloaderImpl(httpClient,context)
+        @ApplicationContext context: Context
+    ): DownloaderInterface {
+        return KtorDownloaderImpl(httpClient, context)
     }
 
     @Provides
@@ -102,10 +112,5 @@ object AppModule {
 //    ):AudioService{
 ////        return AudioService(context)
 //    }
-    @Provides
-    fun provideContext(application: Application): Context {
-        return application.applicationContext
-    }
-
 
 }

@@ -6,5 +6,6 @@ data class SplashUiState(
     val messages:List<String> = emptyList(),
     val isCanceled:Boolean = false,
     val showDialog:Boolean = false,
-    val downloadFailed:Boolean = false
+    val downloadFailed:Boolean = false,
+    val navigateToHome:Boolean = false
 )

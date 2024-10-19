@@ -55,6 +55,22 @@
         app:layout_constraintStart_toEndOf="@id/back_button"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        style="?android:attr/progressBarStyleLarge"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:indeterminateTint="@color/deep_green"
+        android:indeterminateTintMode="src_atop"
+        android:visibility="visible"
+        android:layout_marginBottom="10dp"
+        />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dua_list_recycler"
@@ -68,6 +84,7 @@
         android:layout_marginTop="10dp"
         tools:listitem="@layout/ayah_layout"
         android:layoutAnimation="@anim/ayah_layout_animation"
+        android:visibility="invisible"
         />
 
 

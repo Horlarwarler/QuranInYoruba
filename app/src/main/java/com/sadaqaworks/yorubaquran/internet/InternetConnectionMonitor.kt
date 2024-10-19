@@ -4,6 +4,11 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
+import android.net.NetworkCapabilities.NET_CAPABILITY_WIFI_P2P
+import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
+import android.net.NetworkCapabilities.TRANSPORT_WIFI
+import android.net.NetworkCapabilities.TRANSPORT_WIFI_AWARE
 import android.net.NetworkRequest
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -36,6 +41,8 @@ class InternetConnectionMonitor @Inject constructor(
         }
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addTransportType(TRANSPORT_WIFI)
+            .addTransportType(TRANSPORT_CELLULAR)
             .build()
         connectivityManager.registerNetworkCallback(request, callback)
         awaitClose { connectivityManager.unregisterNetworkCallback(callback) }

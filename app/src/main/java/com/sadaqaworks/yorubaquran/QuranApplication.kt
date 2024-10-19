@@ -12,6 +12,7 @@ class QuranApplication : Application(){
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+
     }
 
     private fun createNotificationChannel() {

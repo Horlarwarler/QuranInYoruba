@@ -1,5 +1,7 @@
 package com.sadaqaworks.yorubaquran.di
 
+import com.sadaqaworks.yorubaquran.dua.data.repository.DuaRepositoryImpl
+import com.sadaqaworks.yorubaquran.dua.domain.repository.DuaRepositoryInterface
 import com.sadaqaworks.yorubaquran.quran.data.remote.RemoteQuranImpl
 import com.sadaqaworks.yorubaquran.quran.data.repository.QuranRepositoryImpl
 import com.sadaqaworks.yorubaquran.quran.data.remote.RemoteQuran
@@ -24,4 +26,10 @@ abstract class quranModule {
     abstract  fun providesRemoteQuran(
         remoteQuranImpl: RemoteQuranImpl
     ): RemoteQuran
+
+    @Binds
+    @Singleton
+    abstract  fun provideDuaRepo(
+        dusRepositoryImpl: DuaRepositoryImpl
+    ): DuaRepositoryInterface
 }

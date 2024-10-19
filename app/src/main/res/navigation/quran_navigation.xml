@@ -92,7 +92,9 @@
         android:id="@+id/splashFragment"
         android:name="com.sadaqaworks.yorubaquran.quran.presentation.splash.SplashFragment"
         android:label="fragment_splash"
-        tools:layout="@layout/fragment_splash" >
+        tools:layout="@layout/fragment_splash"
+
+        >
         <action
             android:id="@+id/action_splashFragment_to_surahFragment"
             app:destination="@id/surahFragment"
@@ -136,6 +138,15 @@
         <action
             android:id="@+id/action_duaCategoryFragment_to_settingFragment"
             app:destination="@id/settingFragment" />
+        <action
+            android:id="@+id/action_duaCategoryFragment_to_detailsDuaFragment"
+            app:destination="@id/detailsDuaFragment"
+            app:popUpTo="@id/duaCategoryFragment"
+            app:exitAnim="@anim/to_left"
+            app:enterAnim="@anim/from_right"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right"
+            />
     </fragment>
     <fragment
         android:id="@+id/chapterFragment"

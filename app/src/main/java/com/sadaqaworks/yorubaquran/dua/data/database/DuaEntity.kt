@@ -41,5 +41,17 @@ data class DuaItemEntity(
     val duaTranslation:String,
     @ColumnInfo(name = "dua_reference")
     val duaReference:String,
-
     )
+@Entity("ruqyah")
+data class RuqyahEntity(
+    @PrimaryKey()
+    val id:Int,
+    @ColumnInfo(name = "surah_id")
+    val surahId:Int,
+    @ColumnInfo(name = "start_verse")
+    val startVerse:Int,
+    @ColumnInfo(name = "end_verse")
+    val endVerse:Int?,
+    @ColumnInfo(name = "note")
+    val note:String?
+)

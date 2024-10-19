@@ -58,7 +58,8 @@ class DownloadNotificationManager(private val downloadService:DownloadService) :
         val openMainActivity = Intent(downloadService, MainActivity::class.java)
         openMainActivity.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         return PendingIntent.getActivities(downloadService, MediaQuranNotificationManager.REQUEST_CODE,
-            arrayOf(openMainActivity), PendingIntent.FLAG_CANCEL_CURRENT)
+            arrayOf(openMainActivity),
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     override fun getNotification(

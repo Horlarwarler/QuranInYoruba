@@ -17,4 +17,7 @@ interface DuaDao {
     @Query("SELECT * FROM dua_item WHERE chapter_id == :chapterId ")
 
     suspend fun getAllDua(chapterId:Int): List<DuaItemEntity>
+
+    @Query("SELECT * FROM ruqyah ORDER by id")
+    suspend fun getAllRuqyah():List<RuqyahEntity>
 }

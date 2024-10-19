@@ -34,13 +34,13 @@ data class  SurahEntity(
     @ColumnInfo("surah_translation")
     val translation: String
 )
-@Entity(tableName = "bookmarkTable")
+@Entity(tableName = "bookmark_table")
 data class BookmarkEntity(
     @PrimaryKey
-    val id: Int,
+    val id: Int = 0,
+    @ColumnInfo("surah_id")
     val surahId: Int,
+    @ColumnInfo("verse_id")
     val verseId:Int,
-    val arabic:String,
-    val translation:String,
-    val footnote:String?
+
 )

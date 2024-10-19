@@ -1,24 +1,31 @@
 package com.sadaqaworks.yorubaquran.quran.presentation.splash
 
+import android.database.Observable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.sadaqaworks.yorubaquran.R
+import com.sadaqaworks.yorubaquran.databinding.FragmentSplashBinding
 import com.sadaqaworks.yorubaquran.internet.InternetConnectionState
 import com.sadaqaworks.yorubaquran.shared.SharedViewModel
 import com.sadaqaworks.yorubaquran.util.CustomToast
-import com.sadaqaworks.yorubaquran.R
-import com.sadaqaworks.yorubaquran.databinding.FragmentSplashBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SplashFragment : Fragment() {
@@ -28,10 +35,12 @@ class SplashFragment : Fragment() {
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
     private lateinit var splashBinding: FragmentSplashBinding
-    private var internetConnectionState: InternetConnectionState = InternetConnectionState.UNAVAILABLE
+    private var internetConnectionState: InternetConnectionState =
+        InternetConnectionState.UNAVAILABLE
     private var isShown = false
     private var dialogIsCanceled = false
-
+    private var job: Job? = null
+    var delay = 5000
 
 
     override fun onPause() {
@@ -45,6 +54,7 @@ class SplashFragment : Fragment() {
         val bottomNavigation = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigation?.visibility = View.GONE
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,105 +62,135 @@ class SplashFragment : Fragment() {
 
 
         splashBinding = FragmentSplashBinding.inflate(inflater)
-        return  splashBinding.root
-    //    return inflater.inflate(R.layout.fragment_splash, container, false)
+        return splashBinding.root
+        //    return inflater.inflate(R.layout.fragment_splash, container, false)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel =  viewModels<SplashViewModel>().value
+        viewModel = viewModels<SplashViewModel>().value
 
 
         val uiState = viewModel.splashUiState
 
-        val coroutineScope = CoroutineScope(Dispatchers.Main)
-        sharedViewModel.shareViewModelState.observe(viewLifecycleOwner){
-                state ->
-                internetConnectionState = state.internetConnectionState
-            if (internetIsAvailable() && !isShown){
-                isShown = true
-                viewModel.getQuranVersion()
-            }
+        job = Job()
+        val coroutineScope = CoroutineScope(Dispatchers.Main + job!!)
+//        sharedViewModel.shareViewModelState.observe(viewLifecycleOwner) { state ->
+//            internetConnectionState = state.internetConnectionState
+//            if ( !isShown) {
+//                isShown = true
+//                viewModel.getQuranVersion()
+//            }
+//
+//
+//        }
+        coroutineScope.launch {
 
+            delay(3000)
+            navigateFromSplashScreen()
+            return@launch
+            var successToastShown = false
+            var isNavigated = false
 
-        }
-
-
-        coroutineScope.launch(Dispatchers.Main) {
-            delay(5000)
-
-            var isOutDated = true
-            var  successToastShown = false
-            while (isOutDated && !dialogIsCanceled && isActive){
-                uiState.observe(viewLifecycleOwner){
-                    state->
-                    val versionIsOutdated= state.isOutDated
-                    val isLoading =  state.isLoading
-                    val dialogIsShown =  state.showDialog
-                    val downloadFailed =  state.downloadFailed
+            while (!dialogIsCanceled && isActive) {
+                uiState.observe(viewLifecycleOwner) { state ->
+                    val versionIsOutdated = state.isOutDated
+                    val isLoading = state.isLoading
+                    val dialogIsShown = state.showDialog
+                    val downloadFailed = state.downloadFailed
                     val messages = state.messages
-
-                    if (versionIsOutdated && !dialogIsShown){
+                    val navigateToHome = state.navigateToHome
+                    if (versionIsOutdated && !dialogIsShown) {
                         viewModel.dialogIsShown()
-                        if (downloadFailed){
+                        if (downloadFailed) {
                             val customToast = CustomToast(requireContext())
                             customToast.showToast(
-                                "Data not downloaded, ${messages[0]}", R.drawable.custom_toast_red_background,R.drawable.baseline_file_download_off_24
+                                "Data not downloaded, ${messages[0]}",
+                                R.drawable.custom_toast_red_background,
+                                R.drawable.baseline_file_download_off_24
                             )
                             showRetryDialog()
-                        }
-                        else{
+                        } else {
                             showDialog()
                         }
 
                     }
-
                     hideOrShowProgress(isLoading)
-                    if (!versionIsOutdated && dialogIsShown && !successToastShown){
+                    if (!versionIsOutdated && dialogIsShown && !successToastShown) {
                         val customToast = CustomToast(requireContext())
                         customToast.showToast(
-                            "Quran Updated", R.drawable.custom_toast_green_background,R.drawable.baseline_file_download_24
+                            "Quran Updated",
+                            R.drawable.custom_toast_green_background,
+                            R.drawable.baseline_file_download_24
                         )
                         successToastShown = true
                     }
-                    if(!versionIsOutdated ){
-                        isOutDated = false
-                    }
 
+                    if (!isNavigated && (navigateToHome)) {
+                        isNavigated = true
+                        navigateFromSplashScreen()
+                    }
                 }
                 delay(1000)
+                delay -= 1000
             }
-            navigateFromSplashScreen()
+             navigateFromSplashScreen()
+
         }
 
 
     }
-    private fun internetIsAvailable():Boolean{
-        return  internetConnectionState == InternetConnectionState.AVAILABLE
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onDestroyView() {
+        sharedViewModel.shareViewModelState.removeObservers(viewLifecycleOwner)
+        viewModel.splashUiState.removeObservers(viewLifecycleOwner)
+        super.onDestroyView()
+
     }
-    private fun updateButtonClick(){
-        if (!internetIsAvailable()){
-            val customToast = CustomToast(requireContext())
+
+    private fun internetIsAvailable(): Boolean {
+        return internetConnectionState == InternetConnectionState.AVAILABLE
+    }
+
+    private fun updateButtonClick() {
+        val customToast = CustomToast(requireContext())
+        if (!internetIsAvailable()) {
+
             customToast.showToast(
-                "No Internet Connection", R.drawable.custom_toast_yellow_background,R.drawable.no_internet
+                "No Internet Connection",
+                R.drawable.custom_toast_red_background,
+                R.drawable.no_internet
             )
             return
 
         }
-        viewModel.downloadUpdatedQuran()
+        customToast.showToast(
+            "Downloading",
+            R.drawable.custom_toast_green_background,
+            R.drawable.baseline_downloading_24
+        )
+
+      //  viewModel.downloadUpdatedQuran()
     }
 
-    private  fun navigateFromSplashScreen(){
-     //   SplashFragmentDirections.actionSplashFragmentToSurahFragment()
+    private fun navigateFromSplashScreen() {
+        //   SplashFragmentDirections.actionSplashFragmentToSurahFragment()
+        job?.cancel()
+        if (delay <= 0) {
+            delay = 1000
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(delay.toLong())
+            findNavController().navigate(R.id.action_splashFragment_to_surahFragment)
+        }
 
-       // findNavController().popBackStack(R.id.splashFragment, true)
-        findNavController().navigate(R.id.action_splashFragment_to_surahFragment)
 
-
+        // findNavController().popBackStack(R.id.splashFragment, true)
     }
 
-    private fun showRetryDialog(){
+    private fun showRetryDialog() {
         showDialog(
             title = "Failed To Update",
             description = "An error occurs while trying to update the app data, you can update later",
@@ -158,12 +198,14 @@ class SplashFragment : Fragment() {
             negativeTextButton = "Ignore For Now"
         )
     }
+
     private fun showDialog(
-        title:String = "Update Quran",
-        description:String = "There is a recent version of the quran than the one on your local storage",
-        positiveTextButton:String ="Download",
-        negativeTextButton:String ="Ignore Update"
-    ){
+        title: String = "Update Quran",
+        description: String = "We made some changes to some translation verses." +
+                "You can chose to update now or do it later ",
+        positiveTextButton: String = "Download",
+        negativeTextButton: String = "Ignore Update"
+    ) {
 
         splashBinding.customDialog.root.visibility = View.VISIBLE
         splashBinding.customDialog.apply {
@@ -179,36 +221,35 @@ class SplashFragment : Fragment() {
                 hideDialog()
             }
         }
+        viewModel.dialogIsShown()
+
 
     }
 
-    private fun hideDialog(){
+    private fun hideDialog() {
         splashBinding.customDialog.root.visibility = View.INVISIBLE
         dialogIsCanceled = true
-
+     //   viewModel.cancelDialogDialog()
+        job?.cancel()
 
     }
 
-    private fun showProgress(){
+    private fun showProgress() {
         splashBinding.progressBar.visibility = View.VISIBLE
     }
 
-    private fun hideProgress(){
+    private fun hideProgress() {
         splashBinding.progressBar.visibility = View.GONE
     }
 
 
-
-    private fun hideOrShowProgress(isLoading:Boolean){
-        if (isLoading){
+    private fun hideOrShowProgress(isLoading: Boolean) {
+        if (isLoading && internetIsAvailable()) {
             showProgress()
-        }
-        else{
+        } else {
             hideProgress()
         }
     }
-
-
 
 
 }

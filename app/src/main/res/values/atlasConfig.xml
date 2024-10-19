@@ -1,0 +1,9 @@
+<resources>
+    <string name="realm_app_id">application-0-jetyz</string>
+    <string name="realm_app_url">https://services.cloud.mongodb.com/groups/63eb53faa014be0fb60e93cd/apps/65e87264cdf51df5ef202b69</string>
+    <string name="realm_base_url">https://services.cloud.mongodb.com</string>
+    <string name="realm_client_api_base_url">https://eu-central-1.aws.services.cloud.mongodb.com</string>
+    <string name="realm_data_api_base_url">https://eu-central-1.aws.data.mongodb-api.com</string>
+    <string name="realm_data_explorer_link">https://cloud.mongodb.com/links/63eb53faa014be0fb60e93cd/explorer/Cluster0/database/collection/find</string>
+    <string name="realm_data_source_name">mongodb-atlas</string>
+</resources>

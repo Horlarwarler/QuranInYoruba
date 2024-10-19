@@ -37,11 +37,12 @@ class DownloadService () : Service() {
         downloadNotificationManager = DownloadNotificationManager(this)
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        val surahJson = intent?.getStringExtra("surah_download")
-        surahToDownload = Json.decodeFromString<SurahDownloadDto>( surahJson!!)
+        val surahJson = intent?.getStringExtra("surah_download")?:return START_STICKY_COMPATIBILITY
+        Log.d("TAG","START SERVICE $surahJson")
+
+        surahToDownload = Json.decodeFromString<SurahDownloadDto>( surahJson)
         surahName = surahToDownload!!.surahName
         if (surahToDownload!!.verses.isNotEmpty()){
             startDownload()
@@ -79,6 +80,7 @@ class DownloadService () : Service() {
                 intent.putExtra("isSuccessfully",false)
             }
             finally {
+                intent.setPackage(packageName)
                 sendBroadcast(intent)
             }
 

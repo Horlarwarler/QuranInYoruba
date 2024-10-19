@@ -51,9 +51,12 @@ class DetailsDuaFragment : Fragment() {
             if (state == null){
                 return@observe
             }
+            //if (!state.isLoading )
+             setTitle(state.title)
             if (!isSet && state.duas.isNotEmpty()){
+                detailsFragmentBinding.progressBar.visibility = View.GONE
+                detailsFragmentBinding.duaListRecycler.visibility = View.VISIBLE
                 setDua(state.duas, adapter = duaDetailsAdapter)
-                setTitle(state.title)
                 isSet = true
             }
 

@@ -1,71 +1,93 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
     id "com.google.dagger.hilt.android"
     id "kotlinx-serialization"
     id 'androidx.navigation.safeargs'
+    id 'com.google.gms.google-services'
+    id 'com.google.devtools.ksp'
+
 
 }
 
 
 android {
     namespace 'com.sadaqaworks.yorubaquran'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.sadaqaworks.yorubaquran"
         minSdk 21
-        targetSdk 33
-        versionCode 13
-        versionName "2.7.0"
+        targetSdk 34
+        versionCode 17
+        versionName "3.0.0"
+        resValue "string", "dbPassword", "Nq858Bqde3QNT6AS"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+        javaCompileOptions{
+            annotationProcessorOptions{
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+
+
+
     }
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro")
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
+        coreLibraryDesugaringEnabled = true
+    }
+    packagingOptions {
+        exclude("META-INF/native-image/org.mongodb/bson/native-image.properties")
+
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '18'
     }
     buildFeatures {
         viewBinding true
     }
+
+    buildToolsVersion '34.0.0'
 }
 
 dependencies {
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation 'androidx.compose.ui:ui-text:1.1.1'
+  //  implementation 'androidx.compose.ui:ui-text:1.1.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
-    implementation 'androidx.preference:preference:1.2.0'
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4'
+    implementation 'androidx.preference:preference:1.2.1'
+    //   implementation 'com.google.firebase:firebase-config:21.6.2'
+    implementation 'com.google.firebase:firebase-firestore:25.0.0'
 
     // To use Kotlin annotation processing tool (kapt)
-    kapt "androidx.room:room-compiler:$room_version"
-    // To use Kotlin Symbol Processing (KSP)
-    implementation "androidx.room:room-ktx:$room_version"
-    // optional - Kotlin Extensions and Coroutines support for Room
-   // implementation("androidx.room:room-ktx:$room_version")
+
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 
     // coroutine
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.44")
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
 
 
     // ktor
@@ -76,12 +98,12 @@ dependencies {
 
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
@@ -96,12 +118,16 @@ dependencies {
     implementation "androidx.core:core:1.9.0"
 
     //location
-    implementation "com.google.android.gms:play-services-location:21.0.1"
+    implementation "com.google.android.gms:play-services-location:21.1.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1"
+
 
     //Pdf library
     implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+   // implementation "com.github.barteksc:android-pdf-viewer:2.8.2"
 
-
+    //Desuggaring
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
 
 
 }

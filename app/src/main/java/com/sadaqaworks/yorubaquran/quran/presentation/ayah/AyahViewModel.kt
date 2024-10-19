@@ -1,18 +1,16 @@
-package com.sadaqaworks.yorubaquran .quran.presentation.ayah
+package com.sadaqaworks.yorubaquran.quran.presentation.ayah
 
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.*
 import com.sadaqaworks.yorubaquran.audio.AudioServiceState
 import com.sadaqaworks.yorubaquran.audio.LocalAudio
-import com.sadaqaworks.yorubaquran.quran.data.mapper.convertToBookmark
 import com.sadaqaworks.yorubaquran.quran.data.remote.dto.SurahDownloadDto
 import com.sadaqaworks.yorubaquran.quran.data.remote.dto.VerseDownloadDto
 import com.sadaqaworks.yorubaquran.quran.domain.model.*
 import com.sadaqaworks.yorubaquran.quran.domain.repository.quranRepositoryInterface
-import com.sadaqaworks.yorubaquran.quran.presentation.ayah.AyahUIEvent
-import com.sadaqaworks.yorubaquran.quran.presentation.ayah.AyahUiState
+import com.sadaqaworks.yorubaquran.shared.QuranPreference
 import com.sadaqaworks.yorubaquran.util.*
+import com.sadaqaworks.yorubaquran.util.Constant.SUDAIS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import java.net.ConnectException
@@ -21,191 +19,217 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AyahViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val sharedPreferences: SharedPreferences,
+    savedStateHandle: SavedStateHandle,
+    private val quranPreference: QuranPreference,
     private val quranRepositoryInterface: quranRepositoryInterface,
     private val localAudio: LocalAudio
-) :ViewModel() {
+) : ViewModel() {
 
-    private val lastReadVerse = sharedPreferences.getInt("lastReadVerse", 0)
+    private val lastSurah = quranPreference.getLastSurah()
+    private val downloadBeforePlaying = quranPreference.downloadBeforePlaying()
+    private val surahId = savedStateHandle.get<Int>("surahId")!!
+    private val reciter = quranPreference.getReciterName()
+    private val fontSize = quranPreference.getFontSize()
+    private val autoPlay = quranPreference.autoPlay()
+    private val autoScroll = quranPreference.autoScroll()
 
-    private val downloadSurahBeforePlaying = sharedPreferences.getBoolean("downloadBeforePlaying",false)
+    private val continueReading = quranPreference.continueReading()
+    private val positionOffset = when (lastSurah) {
+        surahId -> {
+            if (!continueReading) {
+                Pair(0, 0)
+            } else {
+                val offset = quranPreference.getOffset()
+                val position = quranPreference.getPosition()
+                Pair(position, offset)
+            }
 
-    private val defaultReciterName = "Abdurrahmaan As-Sudais"
-    private val reciter = sharedPreferences.getString("reciter",defaultReciterName)!!
-    private val fontSize = sharedPreferences.getInt("fontSize", 20).toFloat()
-    private val autoPlay = sharedPreferences.getBoolean("autoPlay", true)
-    private val autoScroll = sharedPreferences.getBoolean("autoScroll", false)
+        }
+
+        else -> {
+            Pair(0, 0)
+        }
+    }
+
 
     private val reciterId = reciter.mapReciterToId()
 
-    private val surahId = savedStateHandle.get<Int>("surahId")!!
     // should only download sudais quran
-    private val notifyUserAboutReciterSelection = downloadSurahBeforePlaying && reciter != defaultReciterName
-
-    private var downloadJob:Job? = null
+    private val notifyUserAboutReciterSelection = downloadBeforePlaying && reciter != SUDAIS
 
     private var normalizeSearch = NormalizeSearch()
 
-    private var ayahsId: List<Int> = emptyList()
+    private var verseIds: List<Int> = emptyList()
     private val stringListHelper = ListHelper<String>()
-    private var audiosToDownload: List<VerseAudioData> = emptyList()
-    private var searchJob:Job? = null
+    private var searchJob: Job? = null
 
 
-    private val _audioServiceState = MutableLiveData<AudioServiceState>().apply {
-        value = AudioServiceState()
-    }
+    private val _audioServiceState: MutableLiveData<AudioServiceState> = MutableLiveData(
+        AudioServiceState()
+    )
 
-    val audioServiceState:LiveData<AudioServiceState>
+    val audioServiceState: LiveData<AudioServiceState>
         get() = _audioServiceState
 
-    private val _versesToDownload = MutableLiveData<SurahDownloadDto> ()
+    private
+    val _versesToDownload = MutableLiveData<SurahDownloadDto>()
 
-    val versesToDownload :LiveData<SurahDownloadDto>
+    val versesToDownload
+
+            : LiveData<SurahDownloadDto>
         get() = _versesToDownload
     //private var downloadAudios: List<LocalAudioModel> = emptyList()
 
 
-    private val _ayahUiState = MutableLiveData<AyahUiState>().apply {
+    private
+    val _ayahUiState = MutableLiveData<AyahUiState>().apply {
         value = AyahUiState(
-            lastReadVerse = lastReadVerse,
             notifyUserAboutReciterSelection = notifyUserAboutReciterSelection,
-            playFromInternet = !downloadSurahBeforePlaying,
-            fontSize = fontSize,
+            playFromInternet = !downloadBeforePlaying,
+            fontSize = fontSize.toFloat(),
             surahId = surahId,
             autoPlay = autoPlay,
-            autoScroll = autoScroll
+            autoScroll = autoScroll,
+            firstVisibleItemId = positionOffset.first,
+            visibleItemOffset = positionOffset.second
         )
     }
-    val ayahUiState:LiveData<AyahUiState>
+    val ayahUiState
+
+            : LiveData<AyahUiState>
         get() = _ayahUiState
 
     init {
+        initialize()
 
+    }
+
+   private fun initialize(){
+
+        getAllVerses(surahId)
         viewModelScope.async {
-
-           getAllBookmark()
-            getAllAyah(surahId)
+            getAllBookmark()
             getSurahDetails(surahId)
             loadLocalAudio()
 
         }
-
-
     }
 
-    private   fun  loadLocalAudio(handleCompletion:Boolean = false){
+    private fun loadLocalAudio(handleCompletion: Boolean = false) {
         var downloadedAudio: List<DownloadVerse> = emptyList()
         viewModelScope.launch() {
-             downloadedAudio = localAudio.loadAudioFromLocal(surahId)
+            downloadedAudio = localAudio.loadAudioFromLocal(surahId)
 
         }.invokeOnCompletion {
-            _ayahUiState.value = ayahUiState.value?.copy( downloadedAudios = downloadedAudio)
+            _ayahUiState.value = ayahUiState.value?.copy(downloadedAudios = downloadedAudio)
 
-            if (isAllDownloaded()){
-                _ayahUiState.value = ayahUiState.value?.copy(notifyUserToDownloadRemaining = false,)
+            if (isAllDownloaded()) {
+                _ayahUiState.value =
+                    ayahUiState.value?.copy(notifyUserToDownloadRemaining = false)
+            } else {
+                _ayahUiState.value =
+                    ayahUiState.value?.copy(notifyUserToDownloadRemaining = true)
             }
-            else {
-                _ayahUiState.value = ayahUiState.value?.copy(notifyUserToDownloadRemaining = true)
-            }
-            if (handleCompletion){
+            if (handleCompletion) {
                 handleCompletion()
             }
         }
     }
 
 
-    private fun isAllDownloaded():Boolean{
+    private fun isAllDownloaded(): Boolean {
         val downloadAudios = ayahUiState.value?.downloadedAudios!!
 
-        Log.d("Audio", "Audio downloadAudios${downloadAudios.size} and ayah id size ${ayahsId.size} will be paused")
+        Log.d(
+            "Audio",
+            "Audio downloadAudios${downloadAudios.size} and ayah id size ${verseIds.size} will be paused"
+        )
 
-        return downloadAudios.size >= ayahsId.size
+        return downloadAudios.size >= verseIds.size
     }
+
     fun handleUiEvent(ayahUIEvent: AyahUIEvent) {
-        when(ayahUIEvent){
-            is AyahUIEvent.BookmarkButtonClick ->{
-                    bookmarkButtonClick(ayahUIEvent.verse)
+        when (ayahUIEvent) {
+            is AyahUIEvent.BookmarkButtonClick -> {
+                bookmarkButtonClick(ayahUIEvent.verse)
             }
+
             is AyahUIEvent.ShareButtonClick -> {
 
             }
+
             is AyahUIEvent.NavigatedFromScreen -> {
-                saveLastRead(ayahUIEvent.position+1)
+                saveLastRead(ayahUIEvent.position, ayahUIEvent.offset)
             }
 
             is AyahUIEvent.PlayAyah -> {
                 playFromStorage()
             }
 
-            is AyahUIEvent.DownloadClick ->{
+            is AyahUIEvent.DownloadClick -> {
 
                 downloadClick()
             }
+
             is AyahUIEvent.PlayFromInternet -> {
                 playFromInternet()
             }
+
             is AyahUIEvent.OnSearchChange -> {
                 searchChange(ayahUIEvent.searchQuery)
             }
-            is AyahUIEvent.SearchClick ->{
+
+            is AyahUIEvent.SearchClick -> {
                 searchClick(ayahUIEvent.searchQuery)
 
             }
-            is AyahUIEvent.SwitchReciter ->{
+
+            is AyahUIEvent.SwitchReciter -> {
 
             }
-            is AyahUIEvent.DownloadComplete ->{
+
+            is AyahUIEvent.DownloadComplete -> {
                 downloadCompleted(ayahUIEvent.isSuccessfully)
             }
-
-        }
-    }
-
-    private fun getAllAyah(surahId:Int){
-        viewModelScope.launch {
-            quranRepositoryInterface.getAllAyah( surahId).collect{
-                resource ->
-
-                when(resource){
-                    is Resource.Success ->{
-                        if (resource.data != null){
-                            ayahsId = resource.data.map {
-                                it.id
-                            }
-                            Log.d("Ayah Id", "${ayahsId}")
-                            mapBookmarkAyah(resource.data)
-                        }
-                    }
-                    is Resource.Error ->{
-                        addToMessages("${resource.errorMessage} occurs")
-                    }
-                    is Resource.Loading ->{
-
-                    }
-                }
-
+            is AyahUIEvent.GetAllVerse ->{
+                initialize()
             }
+
         }
     }
 
-    private  fun mapBookmarkAyah(verse: List<Verse>){
-        var bookmarkAyahModel  = verse
-        ayahUiState.value?.bookmarkIds?.let {
-                bookmarks ->
-            if (bookmarks.isEmpty()){
+    private fun getAllVerses(surahId: Int) {
+        viewModelScope.launch {
+            val verses = quranRepositoryInterface.getAllAyah(surahId)
+            _ayahUiState.value = _ayahUiState.value?.copy(
+                ayahs = verses
+            )
+            verseIds = verses.map {
+                it.verseId
+            }
+            Log.d("Ayah Id", "$verseIds")
+            mapBookmarkAyah(verses)
+
+        }
+    }
+
+
+    private fun mapBookmarkAyah(
+        verse: List<Verse>
+    ) {
+        var bookmarkAyahModel = verse
+        ayahUiState.value?.bookmarkIds?.let { bookmarks ->
+            if (bookmarks.isEmpty()) {
                 _ayahUiState.value = _ayahUiState.value?.copy(ayahs = bookmarkAyahModel)
                 return
             }
             bookmarks.forEach { _ ->
-               bookmarkAyahModel =  bookmarkAyahModel.map {
-                   if(it.id in bookmarks){
-                       it.copy(isBookmarked = true)
-                   }
-                   else{
-                       it
-                   }
+                bookmarkAyahModel = bookmarkAyahModel.map {
+                    if (it.verseId in bookmarks) {
+                        it.copy(isBookmarked = true)
+                    } else {
+                        it
+                    }
                 }
             }
         }
@@ -213,107 +237,81 @@ class AyahViewModel @Inject constructor(
         _ayahUiState.value = _ayahUiState.value?.copy(ayahs = bookmarkAyahModel)
 
     }
-    private fun getAllBookmark(){
-            viewModelScope.launch {
-                quranRepositoryInterface.getAllBookmark().collect{
-                    resource ->
 
-                    when(resource){
-                        is Resource.Success ->{
-                            if (resource.data != null){
-                                val bookmarksAyahId = resource.data.map {
-                                    it.id
-                                }
-                                _ayahUiState.value = ayahUiState.value?.copy(bookmarkIds =  bookmarksAyahId)
-                            }
+    private fun getAllBookmark() {
+        viewModelScope.launch {
+            quranRepositoryInterface.getBookmarksVerseBySurah(surahId).collect { resource ->
 
-                        }
-                        is Resource.Error ->{
-                            addToMessages("${resource.errorMessage} occurs")
-                        }
-                        is Resource.Loading ->{
-
-                        }
-                    }
-
-                }
-            }
-    }
-
-    private suspend fun getAyah(ayahId:Int){
-        viewModelScope.async {
-            quranRepositoryInterface.getAyah(ayahId).collect{
-                resource ->
-                when(resource) {
-                    is Resource.Loading -> {
-                        _ayahUiState.value = ayahUiState.value?.copy()
-                    }
+                when (resource) {
                     is Resource.Success -> {
-                        _ayahUiState.value = ayahUiState.value?.copy(currentAyahIdInSurah = resource.data?.verseId)
+                        if (resource.data != null) {
+
+                            _ayahUiState.value =
+                                ayahUiState.value?.copy(bookmarkIds = resource.data)
+                        }
+
                     }
 
                     is Resource.Error -> {
                         addToMessages("${resource.errorMessage} occurs")
+                    }
+
+                    is Resource.Loading -> {
 
                     }
                 }
+
             }
-        }.await()
+        }
     }
 
-    private  fun bookmarkButtonClick(verse: Verse){
+    private fun bookmarkButtonClick(verse: Verse) {
         _ayahUiState.value = ayahUiState.value?.copy(selectedAyah = verse)
         val ayahBookmark = ayahUiState.value?.bookmarkIds?.firstOrNull {
-                it == verse.id
-            }
-        val ayahInBookmark = ayahBookmark != null
-        if (ayahInBookmark){
-            deleteFromBookmark()
+            it == verse.id
         }
-        else{
+        val ayahInBookmark = ayahBookmark != null
+        if (ayahInBookmark) {
+            deleteFromBookmark()
+        } else {
             insertToBookmark()
         }
         _ayahUiState.value = ayahUiState.value?.copy(selectedAyah = null)
         getAllBookmark()
-        getAllAyah(surahId)
-    }
-    fun getBookmark(ayahId: Int):Bookmark {
-        viewModelScope.launch {
-            quranRepositoryInterface.getBookmark(ayahId).collect{
-
-                return@collect
-            }
-        }
-        TODO()
+        getAllVerses(surahId)
     }
 
     private fun insertToBookmark() {
         viewModelScope.launch {
             val selectedAyah = ayahUiState.value?.selectedAyah!!
-           val bookmark = selectedAyah.convertToBookmark()
-            quranRepositoryInterface.insertBookmark(bookmark)
+            quranRepositoryInterface.insertBookmark(
+               verse = selectedAyah
+            )
         }
     }
 
     private fun deleteFromBookmark() {
         viewModelScope.launch {
             val selectedAyah = ayahUiState.value?.selectedAyah!!
-            val id = selectedAyah.id
-            quranRepositoryInterface.deleteBookmark(id)
+            quranRepositoryInterface.deleteBookmark(
+               id = selectedAyah.id
+            )
         }
     }
 
-    private  fun getSurahDetails(surahId: Int){
+    private fun getSurahDetails(surahId: Int) {
         viewModelScope.launch {
-            quranRepositoryInterface.getSurah(surahId).collect{
-                    resource ->
-                when(resource) {
+            quranRepositoryInterface.getSurah(surahId).collect { resource ->
+                when (resource) {
                     is Resource.Loading -> {
                         _ayahUiState.value = ayahUiState.value?.copy()
                     }
+
                     is Resource.Success -> {
-                        _ayahUiState.value = ayahUiState.value?.copy(selectedSurah = resource.data)
+                        _ayahUiState.value =
+                            ayahUiState.value?.copy(selectedSurah = resource.data)
                     }
+
                     is Resource.Error -> {
                         addToMessages("${resource.errorMessage} occurs")
                     }
@@ -322,7 +320,7 @@ class AyahViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getSurahAudio( ){
+    private suspend fun getSurahAudio() {
         viewModelScope.async {
             quranRepositoryInterface.getSurahAudio(surahId, reciterId).collect { resource ->
                 when (resource) {
@@ -330,15 +328,17 @@ class AyahViewModel @Inject constructor(
                         Log.d("Log", "Loading")
 
                     }
+
                     is Resource.Error -> {
                         addToMessages("${resource.errorMessage}")
 
                     }
+
                     is Resource.Success -> {
-                        _ayahUiState.value = ayahUiState.value!!.copy(surahAudio = resource.data!!.audioVerses)
+                        _ayahUiState.value =
+                            ayahUiState.value!!.copy(surahAudio = resource.data!!.audioVerses)
                         val shouldPlayOnline = ayahUiState.value?.playFromInternet!!
-                        if (shouldPlayOnline)
-                        {
+                        if (shouldPlayOnline) {
 
                             return@collect
                         }
@@ -349,9 +349,9 @@ class AyahViewModel @Inject constructor(
         }.await()
     }
 
-    private fun getAudioToDownload(){
+    private fun getAudioToDownload() {
 
-        if (isAllDownloaded()){
+        if (isAllDownloaded()) {
             return
         }
         val downloadedAudios = ayahUiState.value?.downloadedAudios!!
@@ -361,15 +361,14 @@ class AyahViewModel @Inject constructor(
         }
         val audiosData = ayahUiState.value!!.surahAudio!!
 
-        val versesNotDownloaded = audiosData.filterNot {
-                downloadedSurahModel ->
+        val versesNotDownloaded = audiosData.filterNot { downloadedSurahModel ->
             downloadedAudiosId.contains(downloadedSurahModel.number)
         }
         val surahName = ayahUiState.value!!.selectedSurah?.translation
-        val versesToDownload = versesNotDownloaded.map {ayah->
+        val versesToDownload = versesNotDownloaded.map { ayah ->
             val fileUrl = ayah.audio
             val id = ayah.number
-            val fileName =  surahId.toString() + "_" + id.toString()+ ".mp3"
+            val fileName = surahId.toString() + "_" + id.toString() + ".mp3"
             VerseDownloadDto(
                 fileUrl = fileUrl,
                 fileName = fileName
@@ -384,36 +383,32 @@ class AyahViewModel @Inject constructor(
     }
 
 
-
-    private  fun downloadClick(){
+    private fun downloadClick() {
         _ayahUiState.value = ayahUiState.value?.copy(isLoading = true)
         viewModelScope.launch {
             getSurahAudio()
         }
 
     }
-    private  fun downloadCompleted(isSuccessfully:Boolean){
+
+    private fun downloadCompleted(isSuccessfully: Boolean) {
 
         try {
             _ayahUiState.value = ayahUiState.value?.copy(isLoading = false)
-            if (isSuccessfully){
+            if (isSuccessfully) {
                 loadLocalAudio(autoPlay)
             }
-        }
-
-        catch (error:Exception){
-            addToMessages("${error.localizedMessage } occurs")
-        }
-
-        catch (error:ConnectException){
+        } catch (error: Exception) {
+            addToMessages("${error.localizedMessage} occurs")
+        } catch (error: ConnectException) {
             addToMessages("No internet connection available")
         }
 
     }
 
-    private fun handleCompletion(){
+    private fun handleCompletion() {
         val isDownloadRemaining = ayahUiState.value?.notifyUserToDownloadRemaining!!
-        if (isDownloadRemaining){
+        if (isDownloadRemaining) {
             _ayahUiState.value = ayahUiState.value?.copy(notifyUserToDownloadRemaining = false)
         }
         _ayahUiState.value = ayahUiState.value?.copy(isLoading = false)
@@ -421,59 +416,58 @@ class AyahViewModel @Inject constructor(
         playFromStorage()
     }
 
-    private fun playFromStorage(){
+    private fun playFromStorage() {
         loadLocalAudio(handleCompletion = false)
         val downloadedAudios = ayahUiState.value?.downloadedAudios!!
         val surahName = ayahUiState.value!!.selectedSurah?.arabic!!
 
         val audios = downloadedAudios.map {
-           val numberInSurah = getVerseId(it.id)
+            val numberInSurah = getVerseId(it.id)
             DownloadVerse(
                 id = it.id,
                 uri = it.uri,
                 surahName = surahName,
                 surahId = this.surahId,
-                numberInSurah = numberInSurah?:0
+                numberInSurah = numberInSurah ?: 0
             )
 
         }
         val convertAudiosToMedia = audios.convertToMedia()
 
-        _audioServiceState.value = audioServiceState.value?.copy(audios = convertAudiosToMedia,)
+        _audioServiceState.value = audioServiceState.value?.copy(audios = convertAudiosToMedia)
         _ayahUiState.value = ayahUiState.value?.copy(canPlay = true)
 
     }
 
-    private fun getVerseId(id:Int):Int?{
+    private fun getVerseId(id: Int): Int? {
         val ayahs = ayahUiState.value?.ayahs
-       return ayahs?.firstOrNull(){
+        return ayahs?.firstOrNull() {
             it.id == id
         }?.verseId
     }
 
-    private fun saveLastRead(lastReadVerse:Int){
-        val surahName = ayahUiState.value?.selectedSurah?.translation!!
-        sharedPreferences.edit().apply {
-            putString("lastReadSurah", surahName)
-            putInt("lastReadVerse", lastReadVerse)
-            apply()
-        }
+    private fun saveLastRead(position: Int, offset: Int) {
+
+        quranPreference.saveLastSurah(surahId)
+        quranPreference.saveOffset(offset)
+        quranPreference.savePosition(position)
+
     }
 
-    private fun isCompleted():Boolean{
-        return ayahUiState.value?.isCompleted == true
-    }
-
-    private fun playFromInternet(){
-        _ayahUiState.value  = ayahUiState.value?.copy(playFromInternet = true, notifyUserAboutReciterSelection = false, isLoading = true)
+    private fun playFromInternet() {
+        _ayahUiState.value = ayahUiState.value?.copy(
+            playFromInternet = true,
+            notifyUserAboutReciterSelection = false,
+            isLoading = true
+        )
         viewModelScope.launch {
             getSurahAudio()
         }.invokeOnCompletion {
             val audioStreams = ayahUiState.value?.surahAudio
             val surahName = ayahUiState.value!!.selectedSurah?.arabic!!
-            if (audioStreams == null || audioStreams.isEmpty()){
+            if (audioStreams.isNullOrEmpty()) {
                 addToMessages("Something Went Wrong")
-                _ayahUiState.value = ayahUiState.value?.copy( isLoading = false)
+                _ayahUiState.value = ayahUiState.value?.copy(isLoading = false)
                 return@invokeOnCompletion
             }
             val audios = audioStreams.map {
@@ -487,71 +481,80 @@ class AyahViewModel @Inject constructor(
 
                 )
             }
-            _audioServiceState.value = audioServiceState.value?.copy(audios =audios.convertToMediaItem(),  )
-            _ayahUiState.value = ayahUiState.value?.copy(canPlay = true, isLoading = false )
+            _audioServiceState.value =
+                audioServiceState.value?.copy(audios = audios.convertToMediaItem())
+            _ayahUiState.value = ayahUiState.value?.copy(canPlay = true, isLoading = false)
 
         }
     }
 
-    private fun addToMessages(message:String){
+    private fun addToMessages(message: String) {
         val messages = ayahUiState.value?.messages!!
 
         val newMessages = stringListHelper.addElement(message, messages)
 
-        _ayahUiState.value  = ayahUiState.value?.copy(messages = newMessages)
+        _ayahUiState.value = ayahUiState.value?.copy(messages = newMessages)
     }
 
-    fun removeFromMessages(){
+    fun removeFromMessages() {
         val messages = ayahUiState.value?.messages!!
 
-        val newMessages = stringListHelper.removeElement( messages)
+        val newMessages = stringListHelper.removeElement(messages)
 
-        _ayahUiState.value  = ayahUiState.value?.copy(messages = newMessages)
+        _ayahUiState.value = ayahUiState.value?.copy(messages = newMessages)
     }
 
 
     private fun searchClick(searchText: String) {
-        _ayahUiState.value = ayahUiState.value?.copy(searchText="", normalizedSearchText = "" )
+        _ayahUiState.value = ayahUiState.value?.copy(searchText = "", normalizedSearchText = "")
     }
 
     private fun searchChange(searchText: String) {
-        if (searchText.isEmpty()){
-            _ayahUiState.value = ayahUiState.value!!.copy(searchIndex = emptyList(), normalizedSearchText = "")
+        if (searchText.isEmpty()) {
+            _ayahUiState.value =
+                ayahUiState.value!!.copy(searchIndex = emptyList(), normalizedSearchText = "")
             return
         }
         searchJob?.cancel()
         searchJob = Job()
         viewModelScope.launch(searchJob!!) {
             val normalizedSearch = arabicOrYorubaSearch(searchText)
-          //  delay(500)
-            _ayahUiState.value = ayahUiState.value?.copy(searchText=searchText, normalizedSearchText = normalizedSearch )
+            //  delay(500)
+            _ayahUiState.value = ayahUiState.value?.copy(
+                searchText = searchText,
+                normalizedSearchText = normalizedSearch
+            )
             val qurans = ayahUiState.value!!.ayahs
-            val searchIds= qurans.filter {
-                ayahModel ->
-               val textFoundInTranslation = stringFoundInText(normalizedSearch, ayahModel.translation)
-               val textFoundInArabic= stringFoundInText(normalizedSearch, ayahModel.arabic)
-             //  val textFoundInFootnote = stringFoundInText(normalizedSearch, ayahModel.footnote?:"")
+            val searchIds = qurans.filter { ayahModel ->
+                val textFoundInTranslation =
+                    stringFoundInText(normalizedSearch, ayahModel.translation)
+                val textFoundInArabic = stringFoundInText(normalizedSearch, ayahModel.arabic)
+                //  val textFoundInFootnote = stringFoundInText(normalizedSearch, ayahModel.footnote?:"")
                 textFoundInArabic || textFoundInTranslation
-            }.map {
-                ayahModel ->
+            }.map { ayahModel ->
                 ayahModel.verseId
             }
 
             _ayahUiState.value = ayahUiState.value!!.copy(searchIndex = searchIds)
         }
     }
+
     private fun stringFoundInText(
-        textToSearch:String,
-        wholeText:String
-    ):Boolean{
+        textToSearch: String,
+        wholeText: String
+    )
+
+            : Boolean {
         val searchPattern = Regex(textToSearch, RegexOption.IGNORE_CASE)
-        return  searchPattern.containsMatchIn(wholeText)
+        return searchPattern.containsMatchIn(wholeText)
 
     }
 
     private fun arabicOrYorubaSearch(
         input: String
-    ): String {
+    )
+
+            : String {
 
         val yorubaPattern = normalizeSearch.getYorubaMarks()
         Log.d("Normalizer", yorubaPattern)
@@ -567,7 +570,8 @@ class AyahViewModel @Inject constructor(
 
     }
 
-    private fun String.mapReciterToId():String{
+    private fun String.mapReciterToId()
+            : String {
         val reciterId = reciters.find {
             this == it.englishName
         }?.identifier!!

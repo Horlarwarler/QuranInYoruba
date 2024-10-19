@@ -63,9 +63,10 @@
         app:layout_constraintStart_toStartOf="@id/guideline1"
         app:layout_constraintEnd_toStartOf="@id/guideline2"
         app:layout_constraintTop_toBottomOf="@id/dua_number"
-        android:textAlignment="textEnd"
-        android:textDirection="ltr"
+        android:textAlignment="textStart"
+        android:textDirection="rtl"
         android:layout_marginTop="10dp"
+
         android:fontFamily="@font/uthmani"
 
         />

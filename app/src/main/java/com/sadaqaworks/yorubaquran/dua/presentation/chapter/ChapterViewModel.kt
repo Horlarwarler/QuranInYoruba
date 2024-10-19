@@ -1,5 +1,6 @@
 package com.sadaqaworks.yorubaquran.dua.presentation.chapter
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.sadaqaworks.yorubaquran.dua.domain.repository.DuaRepositoryInterface
 import com.sadaqaworks.yorubaquran.dua.presentation.category.DuaCategories.DuaChapter.duaCategory
@@ -25,6 +26,7 @@ class ChapterViewModel @Inject constructor(
         get() = _duaChapterUiState
     init {
         getChapters(categoryId!!)
+
         setName(categoryId)
     }
 
@@ -51,6 +53,31 @@ class ChapterViewModel @Inject constructor(
             }
         }
     }
+
+    private fun getAllRuqyah(){
+        viewModelScope.launch {
+            duaRepository.getAllRuqyah()
+                .collectLatest {
+                        resource ->
+
+                    when (resource) {
+                        is Resource.Loading ->{
+
+                        }
+
+                        is Resource.Success ->{
+                            Log.d("TAG","${resource.data}")
+                          //  _duaChapterUiState.value =  duaChapterUiState.value?.copy(chapters = resource.data!!)
+                        }
+
+                        is Resource.Error ->{
+
+                        }
+                    }
+                }
+        }
+    }
+
 
     private fun setName(categoryId: Int){
         val duaCategory = duaCategory.find { it.categoryId == categoryId }

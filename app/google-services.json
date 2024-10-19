@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "989581715268",
+    "project_id": "quran-yoruba",
+    "storage_bucket": "quran-yoruba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989581715268:android:f57e1733a75bca51b05911",
+        "android_client_info": {
+          "package_name": "com.sadaqaworks.yorubaquran"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "989581715268-so6oj3cevsdp4sallr1ovoh164u47uiu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_NX8nU-Fpz2WZpRzE9Hr3Dj4FZCiseso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "989581715268-so6oj3cevsdp4sallr1ovoh164u47uiu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
