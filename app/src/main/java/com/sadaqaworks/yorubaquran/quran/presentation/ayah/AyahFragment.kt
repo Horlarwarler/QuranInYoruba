@@ -13,40 +13,42 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.sadaqaworks.yorubaquran.R
 import com.sadaqaworks.yorubaquran.audio.AudioService
+import com.sadaqaworks.yorubaquran.databinding.FragmentAyahBinding
 import com.sadaqaworks.yorubaquran.download.DownloadService
 import com.sadaqaworks.yorubaquran.internet.InternetConnectionState
 import com.sadaqaworks.yorubaquran.quran.data.remote.dto.SurahDownloadDto
 import com.sadaqaworks.yorubaquran.quran.domain.model.SurahDetails
+import com.sadaqaworks.yorubaquran.quran.domain.model.Verse
 import com.sadaqaworks.yorubaquran.shared.SharedViewModel
 import com.sadaqaworks.yorubaquran.util.CustomError
 import com.sadaqaworks.yorubaquran.util.CustomToast
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.sadaqaworks.yorubaquran.R
-import com.sadaqaworks.yorubaquran.databinding.FragmentAyahBinding
-import com.sadaqaworks.yorubaquran.quran.domain.model.Verse
 import com.sadaqaworks.yorubaquran.util.shareClick
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import kotlinx.serialization.encodeToString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Locale
 
 
 @AndroidEntryPoint
@@ -121,102 +123,67 @@ class AyahFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        linearLayoutManager = LinearLayoutManager(context)
-        val fontSize = ayahViewModel.ayahUiState.value?.fontSize!!
-        firstVisibleItemId = ayahViewModel.ayahUiState.value?.firstVisibleItemId ?: 0
-        visibleItemOffset = ayahViewModel.ayahUiState.value?.visibleItemOffset ?: 0
-        Log.d("TAG", "first visible $firstVisibleItemId and offser $visibleItemOffset")
-        ayahAdapter = AyahAdapter(
-            fontSize = fontSize,
-            onShareClick = { ayahSelected ->
-                activity?.shareClick(ayahSelected)
-            },
-            onBookmarkClick = { verse ->
-                ayahViewModel.handleUiEvent(AyahUIEvent.BookmarkButtonClick(verse))
-            }
-        )
-        val coroutineScope = CoroutineScope(Dispatchers.Main)
-        bindAdapterToRecyclerView()
 
-        fragmentAyahBinding.playIcon.setOnClickListener {
-            playOrPauseButtonClick()
-        }
+        val uiState = ayahViewModel.ayahUiState.value ?: return
+        linearLayoutManager = LinearLayoutManager(requireContext())
 
+        firstVisibleItemId = uiState.firstVisibleItemId
+        visibleItemOffset = uiState.visibleItemOffset
+        Log.d("TAG", "first visible $firstVisibleItemId and offset $visibleItemOffset")
+
+        setupAdapter(uiState)
+        setupUiListeners()
+        observeViewModels()
+        setupMediaBrowser()
+        handleSearchButtonEvent(ayahAdapter)
+    }
+
+
+
+    private fun setupUiListeners() = with(fragmentAyahBinding) {
+        playIcon.setOnClickListener { playOrPauseButtonClick() }
         closeDialogButtonClick()
 
-        fragmentAyahBinding.forwardIcon.setOnClickListener {
-            if (mediaController != null) {
-                mediaController?.transportControls?.skipToNext()
-            }
-        }
+        forwardIcon.setOnClickListener { mediaController?.transportControls?.skipToNext() }
+        rewindIcon.setOnClickListener { mediaController?.transportControls?.skipToPrevious() }
 
-        fragmentAyahBinding.rewindIcon.setOnClickListener {
-            if (mediaController != null) {
-                mediaController?.transportControls?.skipToPrevious()
-            }
-        }
-
-        fragmentAyahBinding.bookmarkIcon.setOnClickListener {
+        bookmarkIcon.setOnClickListener {
             findNavController().navigate(R.id.action_ayahFragment_to_bookmarkFragment)
         }
-        fragmentAyahBinding.backButton.setOnClickListener {
+        backButton.setOnClickListener {
             if (searchIsVisible()) {
                 showAppIcon()
-                return@setOnClickListener
+            } else {
+                findNavController().navigateUp()
             }
-            findNavController().navigateUp()
         }
-        fragmentAyahBinding.actionUp.setOnClickListener {
-            scrollClick(true)
-        }
-        fragmentAyahBinding.actionDown.setOnClickListener {
-            scrollClick(false)
-        }
+
+        actionUp.setOnClickListener { scrollClick(true) }
+        actionDown.setOnClickListener { scrollClick(false) }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun observeViewModels() {
         sharedViewModel.shareViewModelState.observe(viewLifecycleOwner) { state ->
             internetConnectionState = state.internetConnectionState
         }
-        ayahViewModel.audioServiceState.observe(requireActivity()) { state ->
-            Log.d("broadcast", "Broadcast is call call")
-            val mediaItems = state.audios
-            if (mediaItems.isEmpty() || currentSurahIsPlaying) {
-
-                return@observe
+        ayahViewModel.audioServiceState.observe(viewLifecycleOwner) { state ->
+            if (state.audios.isNotEmpty() && !currentSurahIsPlaying) {
+                sendMediaItemsBroadcast(state.audios)
             }
-
-            val intent = Intent()
-            intent.action = "com.quran.media_items"
-            intent.putParcelableArrayListExtra("media_items", ArrayList(mediaItems))
-            Log.d("broadcast", "Broadcast ${mediaItems.size}")
-            intent.setPackage(requireContext().packageName)
-            requireContext().sendBroadcast(intent)
-
         }
-        ayahViewModel.ayahUiState.observe(viewLifecycleOwner) { state: AyahUiState? ->
-            state ?: kotlin.run {
-                return@observe
-            }
-            setAdapter(state.ayahs)
 
-            if (!isAnimated) {
-                setAnimation()
-                coroutineScope.launch {
-                    delay(1000)
-                    isAnimated = true
+        ayahViewModel.ayahUiState.observe(viewLifecycleOwner) { state ->
+            state ?: return@observe
+            updateUiFromState(state)
+
+            // ✅ If surahNumber changes, update adapter dynamically
+            state.selectedSurah?.let { surah ->
+                if (::ayahAdapter.isInitialized) {
+                    ayahAdapter.surahNumber = surah.surahId
+                    ayahAdapter.notifyDataSetChanged()
                 }
             }
-
-            val isLoading = state.isLoading
-            showDownloadProgress(isLoading)
-            state.selectedSurah?.let { surah ->
-                setSurahDetails(surah)
-            }
-            searchIndexes = state.searchIndex
-
-
-            sendToastEvent(state)
-            surahId = state.surahId
-            autoScroll = state.autoScroll
-
         }
 
         ayahViewModel.versesToDownload.observe(viewLifecycleOwner) { surah ->
@@ -224,14 +191,60 @@ class AyahFragment : Fragment() {
                 startDownloadService(surah)
             }
         }
+    }
+
+    private fun setupMediaBrowser() {
         mediaBrowserCompat = MediaBrowserCompat(
             requireContext(),
             ComponentName(requireActivity().applicationContext, AudioService::class.java),
-            connectionCallback, null
-
+            connectionCallback,
+            null
         )
         mediaBrowserCompat?.connect()
-        handleSearchButtonEvent(ayahAdapter)
+    }
+
+    private fun setupAdapter(uiState: AyahUiState) {
+        ayahAdapter = AyahAdapter(
+            fontSize = uiState.fontSize,
+            onShareClick = { ayah -> activity?.shareClick(ayah) },
+            onBookmarkClick = { verse ->
+                ayahViewModel.handleUiEvent(AyahUIEvent.BookmarkButtonClick(verse))
+            },
+            surahNumber = uiState.selectedSurah?.surahId ?: 1 // temporary, will update later
+        )
+        bindAdapterToRecyclerView()
+    }
+
+
+    /** -------------------------------
+     *  Helper Methods
+     *  ------------------------------- */
+    private fun updateUiFromState(state: AyahUiState) {
+        setAdapter(state.ayahs)
+
+        if (!isAnimated) {
+            setAnimation()
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(1000)
+                isAnimated = true
+            }
+        }
+
+        showDownloadProgress(state.isLoading)
+        state.selectedSurah?.let { setSurahDetails(it) }
+        searchIndexes = state.searchIndex
+        sendToastEvent(state)
+
+        surahId = state.surahId
+        autoScroll = state.autoScroll
+    }
+
+    private fun sendMediaItemsBroadcast(mediaItems: List<MediaBrowserCompat.MediaItem>) {
+        val intent = Intent("com.quran.media_items").apply {
+            putParcelableArrayListExtra("media_items", ArrayList(mediaItems))
+            setPackage(requireContext().packageName)
+        }
+        requireContext().sendBroadcast(intent)
     }
 
 
@@ -391,7 +404,7 @@ class AyahFragment : Fragment() {
         startService = true
         val intent = Intent(requireActivity(), DownloadService::class.java)
         val encodeToString = Json.encodeToString(surahDownloadDto)
-        Log.d("TAG","ENCODE TO STRING $encodeToString")
+        Log.d("TAG", "ENCODE TO STRING $encodeToString")
         intent.putExtra("surah_download", encodeToString)
         intent.setPackage(requireContext().packageName)
         requireActivity().startService(intent)
@@ -770,7 +783,7 @@ class AyahFragment : Fragment() {
                     hideSurahDetails()
                     setPauseIcon()
                 } else if (isPaused()) {
-                    showSurahDetails()
+                    //showSurahDetails()
                     setPlayIcon()
                 }
 
@@ -795,7 +808,7 @@ class AyahFragment : Fragment() {
             val playingStateChangeToPlaying = state?.state == PlaybackStateCompat.STATE_PLAYING
 
             if (playingStateChangeToPause) {
-               showSurahDetails()
+                //showSurahDetails()
                 setPlayIcon()
             }
             if (playingStateChangeToPlaying) {
@@ -817,7 +830,7 @@ class AyahFragment : Fragment() {
 //            if (verseNotInView && currentSurahIsPlaying && autoScroll) {
 //                scrollTo(currentNumberInSurah)
 //            }
-            if ( currentSurahIsPlaying && autoScroll) {
+            if (currentSurahIsPlaying && autoScroll) {
                 scrollTo(currentNumberInSurah)
             }
             if (lastPlayedId != currentIdInQuran) {
@@ -829,7 +842,7 @@ class AyahFragment : Fragment() {
     }
 
     private fun hideSurahDetails() {
-        val alreadyHidden = fragmentAyahBinding.surahDetails.root.visibility == View.GONE
+        val alreadyHidden = fragmentAyahBinding.surahDetails.root.isGone
         if (alreadyHidden) {
             return
         }
@@ -838,7 +851,7 @@ class AyahFragment : Fragment() {
     }
 
     private fun showSurahDetails() {
-        val alreadyShown =  fragmentAyahBinding.surahDetails.root.visibility == View.VISIBLE
+        val alreadyShown = fragmentAyahBinding.surahDetails.root.isVisible
         if (phoneIsSmallDevice || alreadyShown) {
             return
         }
@@ -848,9 +861,9 @@ class AyahFragment : Fragment() {
     }
 
     private fun scrollTo(index: Int) {
-       // fragmentAyahBinding.surahListRecycler.smoothScrollToPosition(index - 1)
-        linearLayoutManager.scrollToPositionWithOffset(index-1,0)
-      //  fragmentAyahBinding.surahListRecycler.scrollToPosition(index-1)
+        // fragmentAyahBinding.surahListRecycler.smoothScrollToPosition(index - 1)
+        linearLayoutManager.scrollToPositionWithOffset(index - 1, 0)
+        //  fragmentAyahBinding.surahListRecycler.scrollToPosition(index-1)
 
     }
 

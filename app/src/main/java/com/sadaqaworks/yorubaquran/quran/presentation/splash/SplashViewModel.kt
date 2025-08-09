@@ -1,6 +1,8 @@
 package com.sadaqaworks.yorubaquran.quran.presentation.splash
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -89,6 +91,7 @@ class SplashViewModel @Inject constructor(
 //    }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun shouldCheckUpdate(): Boolean {
       //  return false
 

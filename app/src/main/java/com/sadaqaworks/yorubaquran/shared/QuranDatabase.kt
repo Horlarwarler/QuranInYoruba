@@ -21,7 +21,7 @@ import com.sadaqaworks.yorubaquran.quran.data.database.SurahEntity
     DuaChapterEntity::class,
     DuaCategoryEntity::class,
     RuqyahEntity::class],
-    version = 1, exportSchema = false)
+    version = 2, exportSchema = false)
 abstract class QuranDatabase : RoomDatabase() {
     abstract  fun quranDao(): QuranDao
     abstract fun duaDao():DuaDao

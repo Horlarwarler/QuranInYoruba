@@ -130,7 +130,9 @@
         app:layout_constraintTop_toBottomOf="@id/surah_name"
         app:layout_constraintEnd_toStartOf="@id/guideline2"
         app:layout_constraintStart_toStartOf="@id/guideline1"
-        android:layout_marginTop="30dp"/>
+        android:layout_marginTop="30dp"
+        android:visibility="gone"
+        />
     <include
         android:id="@+id/custom_dialog"
         android:layout_height="wrap_content"
@@ -143,6 +145,8 @@
         android:layout_marginTop="10dp"
         android:visibility="invisible"
         />
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/surah_list_recycler"

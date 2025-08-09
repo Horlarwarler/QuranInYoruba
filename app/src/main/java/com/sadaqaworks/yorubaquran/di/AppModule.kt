@@ -82,7 +82,7 @@ object AppModule {
             QuranDatabase::class.java,
             "updated_quran"
         )
-            .fallbackToDestructiveMigrationOnDowngrade()
+            .fallbackToDestructiveMigration()
             .createFromAsset("updated_quran.db")
             .build()
     }
@@ -104,13 +104,5 @@ object AppModule {
     ): InternetConnectionMonitor {
         return InternetConnectionMonitor(context)
     }
-//
-//    @Provides
-//    @Singleton
-//    fun providesAudioService(
-//        @ApplicationContext context: Context
-//    ):AudioService{
-////        return AudioService(context)
-//    }
 
 }
